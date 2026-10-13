@@ -79,7 +79,8 @@ Follow these sequential steps in your terminal to replicate and run the entire a
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/<your-username>/projectLoka.git
+git clone https://github.com/anmol-janamatti/project-loka-major.git
+
 cd projectLoka
 ```
 
