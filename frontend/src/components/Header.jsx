@@ -1,6 +1,33 @@
+import { useState, useEffect } from 'react';
 import { Sparkles, ExternalLink, Activity, ChevronRight, Search, Bell } from 'lucide-react';
+import { getHealth } from '../services/api';
 
 export default function Header({ result, activeTab, setActiveTab }) {
+  const [backendStatus, setBackendStatus] = useState('checking'); // 'online' | 'offline' | 'checking'
+
+  useEffect(() => {
+    let isMounted = true;
+    async function checkHealth() {
+      try {
+        const res = await getHealth();
+        if (isMounted) {
+          setBackendStatus(res?.status === 'healthy' ? 'online' : 'offline');
+        }
+      } catch {
+        if (isMounted) {
+          setBackendStatus('offline');
+        }
+      }
+    }
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 5000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
   const borderColor = !result
     ? 'border-slate-200/80'
     : result.prediction === 'CANDIDATE'
@@ -59,13 +86,32 @@ export default function Header({ result, activeTab, setActiveTab }) {
           </div>
 
           {/* Model Status Badge */}
-          <div className="hidden md:flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200/70">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-            </span>
-            <span>TabNet Online</span>
-          </div>
+          {backendStatus === 'online' ? (
+            <div className="hidden md:flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200/70">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              </span>
+              <span>TabNet Online</span>
+            </div>
+          ) : backendStatus === 'offline' ? (
+            <div
+              className="hidden md:flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 border border-rose-200/70 cursor-help"
+              title="FastAPI server is not responding at http://localhost:8000. Start it with: uvicorn app.main:app --reload"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
+              </span>
+              <span>Backend Offline</span>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 border border-amber-200/70">
+              <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+              </span>
+              <span>Connecting…</span>
+            </div>
+          )}
 
           {/* Docs Link */}
           <a
