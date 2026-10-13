@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+torch
+pytorch-tabnet
+scikit-learn
+joblib
+numpy
